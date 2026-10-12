@@ -89,8 +89,8 @@ def apply_stencil(stencil_relative_arr_idx, stencil_weights, y):
     #############################################
     for i in range(N):
         k = 0
-        for j in range(stencil_relative_arr_idx[0],stencil_relative_arr_idx[-1] + 1):
-
+        for k,j in enumerate(stencil_relative_arr_idx):
+    
             retval[i] += stencil_weights[k]*y[(i + j) % N]
             k+=1
     #############################################
@@ -102,7 +102,7 @@ def apply_stencil(stencil_relative_arr_idx, stencil_weights, y):
 
 def lmax(a1, a2):
     """
-    Return the L_\infty error
+    Return the L_\\infty error
     """
     #############################################
     # Exercise d: START
@@ -115,7 +115,7 @@ def lmax(a1, a2):
 
 
 """
-Simple function with a=2*\pi
+Simple function with a=2*\\pi
   f(x) = Re(exp(i*a*x))
 and its derivative
   f^(p) = Re( (i*a)^p exp(i*a*x) )
@@ -240,7 +240,10 @@ for rci in range(len(test_config_)):
         """
         Generate finite difference stencils
         """
-
+        diff_order = p
+        x_points = h * np.array(stencil_relative_arr_idx)
+        x_eval = 0
+        stencil_weights = get_fd_stencil_weights(diff_order, x_points, x_eval)
         #############################################
         # Exercise a: END
         #############################################
@@ -267,7 +270,14 @@ for rci in range(len(test_config_)):
             #############################################
             # Exercise c: START
             #############################################
-
+            ax.plot(x, y, label="f(x)", color="blue", linewidth=2)
+            ax.plot(x, y_deriv_exact,label="Analytical derivative", color="green", linewidth=2)
+            ax.plot(x, y_deriv_num, label="Numerical derivative", color="red", linestyle="--", linewidth=2)
+            ax.set_title(f"Finite Difference Approximation (p={p}, order={order})")
+            ax.set_xlabel("x")
+            ax.set_ylabel("f(x) / derivative")
+            ax.legend()
+            ax.grid(True, alpha=0.3)
 
             #############################################
             # Exercise c: END
@@ -307,42 +317,49 @@ if 1:
     #############################################
     # Exercise f, g: START
     #############################################
+fig, ax = plt.subplots(1, 2, figsize=(12, 5))
 
-    plt.plot(x,y_deriv_exact, label="exact")
-    plt.plot(x,y_deriv_num,label="numeric")
-    plt.xlabel("x")
-    plt.ylabel("derivative")
-    plt.legend()
-    plt.grid()
-    plt.show()
+# First derivative
+ax[0].plot(h_, errors[0], 'o-', label='Numerical order 2')
+ax[0].plot(h_, errors[1], 's-', label='Numerical order 4')
 
-    fig, graphics = plt.plot(1,2)
-    graphics[0].loglog(h_, errors[0], label='order 2')
-    graphics[0].loglog(h_, errors[1], label='order 4')
-    graphics[1].loglog(h_, errors[2], label='order 2')
-    graphics[1].loglog(h_, errors[3], label='order 4')
-
-    graphics[0].set_title("1st derivative")
-    graphics[1].set_title("2nd derivative")
-
-    graphics[0].set_xlabel("h")
-    graphics[1].set_xlabel("h")
-
-    graphics[0].set_ylabel("error")
-    graphics[1].set_ylabel("error")
-
-    graphics[1].grid()
-    graphics[1].grid()
-
-    graphics[1].legend()
-    graphics[1].legend()
-
-    plt.tight_layout()
-    plt.show()
+# Second derivative
+ax[1].plot(h_, errors[2], 'o-', label='Numerical order 2')
+ax[1].plot(h_, errors[3], 's-', label='Numerical order 4')
 
 
+# Reference convergence for first derivative
+ref2_first = errors[0, 0] * (h_ / h_[0])**2
+ref4_first = errors[1, 0] * (h_ / h_[0])**4
+
+ax[0].plot(h_, ref2_first, '--', label='Reference order 2')
+ax[0].plot(h_, ref4_first, ':', label='Reference order 4')
 
 
+# Reference convergence for second derivative
+ref2_second = errors[2, 0] * (h_ / h_[0])**2
+ref4_second = errors[3, 0] * (h_ / h_[0])**4
+
+ax[1].plot(h_, ref2_second, '--', label='Reference order 2')
+ax[1].plot(h_, ref4_second, ':', label='Reference order 4')
+
+
+# First graph settings
+ax[0].set_title('First derivative')
+ax[0].set_xlabel('h')
+ax[0].set_ylabel('Error')
+ax[0].grid(True)
+ax[0].legend()
+
+# Second graph settings
+ax[1].set_title('Second derivative')
+ax[1].set_xlabel('h')
+ax[1].set_ylabel('Error')
+ax[1].grid(True)
+ax[1].legend()
+
+fig.tight_layout()
+plt.show()
     #############################################
     # Exercise f, g: END
     #############################################
